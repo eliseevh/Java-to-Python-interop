@@ -1,15 +1,15 @@
 package eliseev.pythoninterop.executor;
 
-import eliseev.pythoninterop.executor.message.Message;
-
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
  * Creates python subprocess and interacts with it sending/receiving messages using its stdin/stdout.
  */
-public class ProcessPythonExecutor implements PythonExecutor {
+public class ProcessPythonExecutor extends AbstractPythonExecutor {
     private final Process process;
 
     /**
@@ -29,32 +29,29 @@ public class ProcessPythonExecutor implements PythonExecutor {
         }
     }
 
+    @Override
+    protected Writer getWriter() {
+        return process.outputWriter();
+    }
+
+    @Override
+    protected Reader getReader() {
+        return process.inputReader();
+    }
+
     /**
-     * {@inheritDoc}
-     * Checks if python subprocess is alive. If not, exception is thrown.
+     * Checks if python subprocess is alive.
+     * If it is dead, returns optional containing its error stream and exit code.
      *
-     * @throws PythonExecutorException if message cannot be sent or answer is in incorrect format or python subprocess
-     *                                 is dead
+     * @return empty optional, if subprocess is alive, and optional with information about subprocess, if it is dead
      */
     @Override
-    public Message sendMessage(final Message message) throws PythonExecutorException {
-        if (!process.isAlive()) {
-            throw new PythonExecutorException(
-                    "Cannot send message, because python process is dead. Process's error stream:" +
-                    process.errorReader().lines().collect(
-                            Collectors.joining(System.lineSeparator() + "    ", System.lineSeparator() + "    ",
-                                               System.lineSeparator())) + "Process's exit code: " +
-                    process.exitValue());
-        }
-        try {
-            final Writer writer = process.outputWriter();
-            writer.write(message.getMessage());
-            writer.flush();
-
-            return new Message(process.inputReader());
-        } catch (final IOException e) {
-            throw new PythonExecutorException(e);
-        }
+    protected Optional<String> canSendMessage() {
+        return process.isAlive() ? Optional.empty() : Optional.of(
+                "Cannot send message, because python process is dead. Process's error stream:" +
+                process.errorReader().lines().collect(
+                        Collectors.joining(System.lineSeparator() + "    ", System.lineSeparator() + "    ",
+                                           System.lineSeparator())) + "Process's exit code: " + process.exitValue());
     }
 
     /**
