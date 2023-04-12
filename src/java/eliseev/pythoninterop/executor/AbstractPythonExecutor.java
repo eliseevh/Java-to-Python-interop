@@ -12,17 +12,15 @@ public abstract class AbstractPythonExecutor implements PythonExecutor {
      * Gets writer that can be used to send the message.
      *
      * @return writer
-     * @throws IOException if an I/O error occurs when getting stream
      */
-    protected abstract Writer getWriter() throws IOException;
+    protected abstract Writer getWriter();
 
     /**
      * Gets reader that can be used to read the answer to the message that was sent.
      *
      * @return reader
-     * @throws IOException if an I/O error occurs when getting stream
      */
-    protected abstract Reader getReader() throws IOException;
+    protected abstract Reader getReader();
 
     /**
      * Checks if executor can send the message. If no, returns the {@link String} with details on reason why message

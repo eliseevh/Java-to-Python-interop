@@ -1,7 +1,7 @@
 import sys
 import io
 
-SEPARATOR = '\r\n'
+SEPARATOR = '\n'
 
 
 class Message:

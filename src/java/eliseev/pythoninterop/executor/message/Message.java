@@ -12,7 +12,7 @@ import java.io.Reader;
  * {@link Message#SEPARATOR} field.
  */
 public class Message {
-    private static final String SEPARATOR = "\r\n";
+    private static final char SEPARATOR = '\n';
     private final MessageType type;
     private final String text;
 
@@ -65,16 +65,10 @@ public class Message {
                 if (read == -1) {
                     throw new MessageException("Unexpected eof");
                 }
-                builder.append((char) read);
-                if (builder.length() >= SEPARATOR.length()) {
-                    final int start = builder.length() - SEPARATOR.length();
-                    for (int i = 0; i < SEPARATOR.length(); i++) {
-                        if (builder.charAt(start + i) != SEPARATOR.charAt(i)) {
-                            continue readChar;
-                        }
-                    }
-                    return builder.substring(0, start);
+                if ((char) read == SEPARATOR) {
+                    return builder.toString();
                 }
+                builder.append((char) read);
             }
         } catch (final IOException e) {
             throw new MessageException(e);
@@ -122,7 +116,7 @@ public class Message {
      * @return message in format, defined in {@link Message} documentation
      */
     public String getMessage() {
-        return type + SEPARATOR + text.length() + SEPARATOR + text;
+        return type.toString() + SEPARATOR + text.length() + SEPARATOR + text;
     }
 
     @Override

@@ -9,6 +9,8 @@ import java.util.Optional;
  */
 public class NetworkPythonExecutor extends AbstractPythonExecutor {
     private final Socket socket;
+    private final Reader reader;
+    private final Writer writer;
 
     /**
      * Creates connection to the python process that can be used to send/receive messages.
@@ -16,7 +18,7 @@ public class NetworkPythonExecutor extends AbstractPythonExecutor {
      *
      * @param host the host name, or {@code null} for the loopback address
      * @param port the port number
-     * @throws PythonExecutorException if cannot create connection
+     * @throws PythonExecutorException if cannot create connection or get input/output streams of the connection
      */
     public NetworkPythonExecutor(final String host, final int port) throws PythonExecutorException {
         try {
@@ -24,28 +26,32 @@ public class NetworkPythonExecutor extends AbstractPythonExecutor {
         } catch (final IOException e) {
             throw new PythonExecutorException("Cannot connect to python process: ", e);
         }
+        try {
+            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        } catch (final IOException e) {
+            throw new PythonExecutorException("Cannot get input/output streams of the connection");
+        }
     }
 
     /**
      * Gets writer associated with connection's output stream
      *
      * @return writer wrapper of connection's output stream
-     * @throws IOException if an I/O error occurs when creating the output stream
      */
     @Override
-    protected Writer getWriter() throws IOException {
-        return new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+    protected Writer getWriter() {
+        return writer;
     }
 
     /**
      * Gets reader associated with connection's input stream
      *
      * @return reader wrapper of connection's input stream
-     * @throws IOException if an I/O error occurs when creating the input stream or if the connection is closed
      */
     @Override
-    protected Reader getReader() throws IOException {
-        return new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    protected Reader getReader() {
+        return reader;
     }
 
     @Override

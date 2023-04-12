@@ -6,7 +6,7 @@ import threading
 HOST = "127.0.0.1"
 PORT = int(sys.argv[1]) if (len(sys.argv) > 1) else 2323
 
-SEPARATOR = '\r\n'
+SEPARATOR = '\n'
 
 
 class Message:
@@ -38,7 +38,8 @@ def handle_connection(connection):
         while True:
             # Тут я полагаюсь, что всё сообщение целиком передается одним куском
             # (потому что connection.recv прекращает читать, если некоторое небольшое время данных нет)
-            # и занимает не больше 4096 байт
+            # и занимает не больше 4096 байт. В большинстве случаев это будет так(4096 байт - очень большое сообщение),
+            # поэтому считаю разумным здесь на это положиться
             data = connection.recv(4096)
             if not data:
                 break
