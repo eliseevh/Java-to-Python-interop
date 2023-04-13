@@ -116,7 +116,7 @@ public class Message {
      * @return message in format, defined in {@link Message} documentation
      */
     public String getMessage() {
-        return type.toString() + SEPARATOR + text.length() + SEPARATOR + text;
+        return type.toString() + SEPARATOR + text.codePointCount(0, text.length()) + SEPARATOR + text;
     }
 
     @Override

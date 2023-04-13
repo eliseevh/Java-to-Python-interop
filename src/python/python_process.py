@@ -23,7 +23,7 @@ class Message:
             raise ValueError('Incorrect arguments')
 
     def write(self):
-        sys.stdout.write(f'{self.type}{SEPARATOR}{len(self.text)}{SEPARATOR}{self.text}')
+        sys.stdout.write(f'{self.type}{SEPARATOR}{len(self.text.encode("utf-16-le")) // 2}{SEPARATOR}{self.text}')
         sys.stdout.flush()
 
     @staticmethod

@@ -21,7 +21,7 @@ class Message:
             raise ValueError('Incorrect arguments')
 
     def write(self, connection):
-        connection.sendall(f'{self.type}{SEPARATOR}{len(self.text)}{SEPARATOR}{self.text}'.encode('utf-8'))
+        connection.sendall(f'{self.type}{SEPARATOR}{len(self.text.encode("utf-16-le")) // 2}{SEPARATOR}{self.text}'.encode('utf-8'))
 
     @staticmethod
     def ok(text=''):
