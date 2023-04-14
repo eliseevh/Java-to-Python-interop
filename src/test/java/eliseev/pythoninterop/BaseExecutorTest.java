@@ -18,7 +18,6 @@ import static org.junit.Assert.*;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class BaseExecutorTest {
     protected static final String PYTHON_INTERPRETER_COMMAND = "python3";
-    protected static final String PATH_TO_PYTHON_SCRIPTS = "./src/python/";
 
     private static final int SIZE_OF_GENERATED_TESTS = 5000;
 

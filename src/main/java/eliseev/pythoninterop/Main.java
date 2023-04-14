@@ -20,6 +20,11 @@ public class Main {
                                "\"process\" or \"network\"");
             return;
         }
+        try {
+            PythonScriptCreator.createPythonScriptsInDefaultDirectory();
+        } catch (final IOException e) {
+            System.err.println("Cannot create python scripts. Trying to work without creating");
+        }
         if (args[0].equals("network")) {
             if (args.length >= 2 && args[1].equals("--run")) {
                 final int port;
@@ -29,7 +34,7 @@ public class Main {
                     port = PythonServer.port();
                 }
                 try {
-                    PythonServer.run(port, PYTHON_INTERPRETER_NAME, "./src/python/python_network.py");
+                    PythonServer.run(port, PYTHON_INTERPRETER_NAME, PythonScriptCreator.getDefaultNetworkPath());
                 } catch (final IOException e) {
                     System.err.println("Cannot run python server: " + e.getMessage());
                     return;
@@ -37,7 +42,7 @@ public class Main {
             }
         }
         try (final PythonExecutor executor = args[0].equals("process") ? new ProcessPythonExecutor(
-                PYTHON_INTERPRETER_NAME, "./src/python/python_process.py") : new NetworkPythonExecutor(null,
+                PYTHON_INTERPRETER_NAME, PythonScriptCreator.getDefaultProcessPath()) : new NetworkPythonExecutor(null,
                                                                                                        PythonServer.port());
              final Scanner scanner = new Scanner(System.in)
         ) {

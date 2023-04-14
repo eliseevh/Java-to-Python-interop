@@ -1,9 +1,6 @@
 package eliseev.pythoninterop;
 
-import eliseev.pythoninterop.executor.NetworkPythonExecutor;
-import eliseev.pythoninterop.executor.PythonExecutor;
-import eliseev.pythoninterop.executor.PythonExecutorException;
-import eliseev.pythoninterop.executor.PythonServer;
+import eliseev.pythoninterop.executor.*;
 
 import java.io.IOException;
 
@@ -14,7 +11,7 @@ public class NetworkExecutorTest extends BaseExecutorTest {
     public void _initialize() {
         super._initialize();
         try {
-            PythonServer.run(PYTHON_INTERPRETER_COMMAND, PATH_TO_PYTHON_SCRIPTS + "python_network.py");
+            PythonServer.run(PYTHON_INTERPRETER_COMMAND, PythonScriptCreator.getDefaultNetworkPath());
             // sleep, чтобы сервер успел запуститься
             // Вероятно, можно лучше, но я не умею
             Thread.sleep(10);
