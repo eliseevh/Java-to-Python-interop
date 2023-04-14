@@ -11,7 +11,18 @@ SEPARATOR = '\n'
 
 class Message:
     def __init__(self, **kwargs):
-        if 'type' in kwargs:
+        if 'reader' in kwargs:
+            reader = kwargs['reader']
+            self.type = reader.readline()
+            # Чтобы понять, что соединение закрылось
+            if not self.type:
+                return
+            self.type = self.type[:-len(SEPARATOR)]
+            length = int(reader.readline()[:-len(SEPARATOR)])
+            self.text = reader.read(length)
+            if len(self.text) != length:
+                raise IOError('Unexpected eof')
+        elif 'type' in kwargs:
             self.type = kwargs['type']
             if 'text' in kwargs:
                 self.text = kwargs['text']
@@ -20,8 +31,14 @@ class Message:
         else:
             raise ValueError('Incorrect arguments')
 
+    @staticmethod
+    def read(reader):
+        return Message(reader=reader)
+
     def write(self, connection):
-        connection.sendall(f'{self.type}{SEPARATOR}{len(self.text.encode("utf-16-le")) // 2}{SEPARATOR}{self.text}'.encode('utf-8'))
+        connection.write(
+            f'{self.type}{SEPARATOR}{len(self.text.encode("utf-16-le")) // 2}{SEPARATOR}{self.text}')
+        connection.flush()
 
     @staticmethod
     def ok(text=''):
@@ -34,39 +51,29 @@ class Message:
 
 def handle_connection(connection):
     output_file = 'output.txt'
-    with connection:
+    with connection.makefile(mode='rw', encoding='utf-8', newline=SEPARATOR) as sock_file:
         while True:
-            # Тут я полагаюсь, что всё сообщение целиком передается одним куском
-            # (потому что connection.recv прекращает читать, если некоторое небольшое время данных нет)
-            # и занимает не больше 4096 байт. В большинстве случаев это будет так(4096 байт - очень большое сообщение),
-            # поэтому считаю разумным здесь на это положиться
-            data = connection.recv(4096)
-            if not data:
-                break
-            data = data.decode('utf-8')
             try:
-                message_type, message_length, text = data.split(SEPARATOR, 2)
-                if len(text) != int(message_length):
-                    raise IOError('unexpected eof')
-                message = Message(type=message_type, text=text)
+                message = Message.read(reader=sock_file)
+                if not message.type:
+                    break
                 if message.type == 'TEXT':
                     with open(output_file, 'a') as f:
                         f.write(message.text)
-                    Message.ok().write(connection)
+                    Message.ok().write(sock_file)
                 elif message.type == 'EXPRESSION':
                     result = str(eval(message.text))
-                    Message.ok(result).write(connection)
+                    Message.ok(result).write(sock_file)
                 elif message.type == 'EXECUTE':
                     exec(message.text)
-                    Message.ok().write(connection)
+                    Message.ok().write(sock_file)
                 elif message.type == 'SET_OUTPUT_FILE':
                     output_file = message.text
-                    Message.ok().write(connection)
+                    Message.ok().write(sock_file)
                 else:
-                    Message.error(f'UNKNOWN MESSAGE TYPE: {message.type}').write(connection)
+                    Message.error(f'UNKNOWN MESSAGE TYPE: {message.type}').write(sock_file)
             except Exception as e:
-                Message.error(str(e)).write(connection)
-
+                Message.error(str(e)).write(sock_file)
 
 if __name__ == '__main__':
     # Сразу закрываем возможность пользоваться IO, чтобы не было проблем с print() и input() внутри eval() и exec()

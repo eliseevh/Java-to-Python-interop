@@ -19,12 +19,16 @@ import static org.junit.Assert.*;
 public abstract class BaseExecutorTest {
     protected static final String PYTHON_INTERPRETER_COMMAND = "python3";
 
-    private static final int SIZE_OF_GENERATED_TESTS = 5000;
+    private static final int SUM_SIZE_OF_GENERATED_TESTS = 100000;
+
+    private static final int SMALL_SIZE = 100;
+
+    private static final int BIG_SIZE = 5000;
 
     private static Random random;
 
-    private static String generateRandomString() {
-        final int length = random.nextInt(1000);
+    private static String generateRandomString(final int size) {
+        final int length = random.nextInt(size);
         final StringBuilder result = new StringBuilder();
         for (int i = 0; i < length; i++) {
             final int codePoint = random.nextInt(1, Character.MAX_CODE_POINT + 1);
@@ -89,25 +93,47 @@ public abstract class BaseExecutorTest {
     }
 
     @Test
-    public void generatedStringExpressions() {
+    public void smallGeneratedStringExpressions() {
         try (final PythonExecutor executor = getExecutor()
         ) {
-            IntStream.range(0, SIZE_OF_GENERATED_TESTS).forEach(idx -> testCorrectMessage(executor,
-                                                                                          createMessage("EXPRESSION",
-                                                                                                        "'" +
-                                                                                                        generateRandomString() +
-                                                                                                        "'")));
+            IntStream.range(0, SUM_SIZE_OF_GENERATED_TESTS / SMALL_SIZE).forEach(idx -> {
+                testCorrectMessage(executor, createMessage("EXPRESSION", "'" + generateRandomString(SMALL_SIZE) + "'"));
+            });
         } catch (final PythonExecutorException e) {
             fail(e.getMessage());
         }
     }
 
     @Test
-    public void generatedTexts() {
+    public void bigGeneratedStringExpressions() {
         try (final PythonExecutor executor = getExecutor()
         ) {
-            IntStream.range(0, SIZE_OF_GENERATED_TESTS).forEach(idx -> {
-                testCorrectMessage(executor, createMessage("TEXT", generateRandomString()));
+            IntStream.range(0, SUM_SIZE_OF_GENERATED_TESTS / BIG_SIZE).forEach(idx -> {
+                testCorrectMessage(executor, createMessage("EXPRESSION", "'" + generateRandomString(BIG_SIZE) + "'"));
+            });
+        } catch (final PythonExecutorException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void smallGeneratedTexts() {
+        try (final PythonExecutor executor = getExecutor()
+        ) {
+            IntStream.range(0, SUM_SIZE_OF_GENERATED_TESTS / SMALL_SIZE).forEach(idx -> {
+                testCorrectMessage(executor, createMessage("TEXT", generateRandomString(SMALL_SIZE)));
+            });
+        } catch (final PythonExecutorException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void bigGeneratedTexts() {
+        try (final PythonExecutor executor = getExecutor()
+        ) {
+            IntStream.range(0, SUM_SIZE_OF_GENERATED_TESTS / BIG_SIZE).forEach(idx -> {
+                testCorrectMessage(executor, createMessage("TEXT", generateRandomString(BIG_SIZE)));
             });
         } catch (final PythonExecutorException e) {
             fail(e.getMessage());
@@ -126,27 +152,52 @@ public abstract class BaseExecutorTest {
     }
 
     @Test
-    public void generatedIncorrectStringExpressions() {
+    public void smallGeneratedIncorrectStringExpressions() {
         try (final PythonExecutor executor = getExecutor()
         ) {
-            IntStream.range(0, SIZE_OF_GENERATED_TESTS).forEach(idx -> testIncorrectMessage(executor,
-                                                                                            createMessage("EXPRESSION",
-                                                                                                          "'" +
-                                                                                                          generateRandomString() +
-                                                                                                          "''")));
+            IntStream.range(0, SUM_SIZE_OF_GENERATED_TESTS / SMALL_SIZE).forEach(idx -> {
+                testIncorrectMessage(executor,
+                                     createMessage("EXPRESSION", "'" + generateRandomString(SMALL_SIZE) + "''"));
+            });
         } catch (final PythonExecutorException e) {
             fail(e.getMessage());
         }
     }
 
     @Test
-    public void generatedIncorrectImportExecutions() {
+    public void bigGeneratedIncorrectStringExpressions() {
         try (final PythonExecutor executor = getExecutor()
         ) {
-            IntStream.range(0, SIZE_OF_GENERATED_TESTS).forEach(idx -> testIncorrectMessage(executor,
-                                                                                            createMessage("EXECUTE",
-                                                                                                          "import " +
-                                                                                                          generateRandomString())));
+            IntStream.range(0, SUM_SIZE_OF_GENERATED_TESTS / BIG_SIZE).forEach(idx -> {
+                testIncorrectMessage(executor,
+                                     createMessage("EXPRESSION", "'" + generateRandomString(BIG_SIZE) + "''"));
+            });
+        } catch (final PythonExecutorException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void smallGeneratedIncorrectImportExecutions() {
+        try (final PythonExecutor executor = getExecutor()
+        ) {
+            IntStream.range(0, SUM_SIZE_OF_GENERATED_TESTS / SMALL_SIZE).forEach(idx -> {
+                testIncorrectMessage(executor,
+                                     createMessage("EXECUTE", "import" + " " + generateRandomString(SMALL_SIZE)));
+            });
+        } catch (final PythonExecutorException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void bigGeneratedIncorrectImportExecutions() {
+        try (final PythonExecutor executor = getExecutor()
+        ) {
+            IntStream.range(0, SUM_SIZE_OF_GENERATED_TESTS / BIG_SIZE).forEach(idx -> {
+                testIncorrectMessage(executor,
+                                     createMessage("EXECUTE", "import" + " " + generateRandomString(BIG_SIZE)));
+            });
         } catch (final PythonExecutorException e) {
             fail(e.getMessage());
         }
